@@ -1,33 +1,41 @@
 from turtle import *
 import random
-from math import sin, cos, pi
+from math import sin, cos, pi, sqrt
 
 setup(800, 800)
 speed(0)
 
 
-def drawBranch(x, y, angle, cumulative_angle, length, level):
-    # new_x = sqrt(length^2-y^2)
-    # new_y = sqrt(length^2-x^2)
-    new_x = x + length * sin(cumulative_angle)
-    new_y = y + length * cos(cumulative_angle)
-
-
+def drawBranch(x, y, angle, cumulative_angle, length, level, wacky):
+    level -= 1
     if level == 0:
         return
     else:
-        # width(length/20)
+        # Draw Stuff
+        new_x = x + length * sin(cumulative_angle)
+        new_y = y + length * cos(cumulative_angle)
+        width(level/10)
         penup()
         goto(x,y)
         pendown()
         goto(new_x, new_y)
-        level -= 1
-        # length /= 1 + random.uniform(0,1)
+
+        # Update Stuff and Recurse
         # angle /= 1.4
-        length /= .8 + random.betavariate(3,8)
-        if random.random()<1:
-            drawBranch(new_x, new_y, angle, cumulative_angle + angle, length, level)
-            drawBranch(new_x, new_y, angle, cumulative_angle - angle, length, level)
+        wacky *= .8 + random.betavariate(3,6)
+        # wacky = wacky**2
+        if wacky > 1: #lets get wacky
+            print('lets get it wacky in here', wacky)
+            length *= wacky**2
+            drawBranch(new_x, new_y, angle, cumulative_angle + angle, length, level, wacky)
+            drawBranch(new_x, new_y, angle, cumulative_angle - angle, length, level, wacky)
+
+        else:
+            print('not wack')
+            length *= wacky / 1.3
+            # length /= 2
+            drawBranch(new_x, new_y, angle, cumulative_angle - angle, length, level, wacky)
+            drawBranch(new_x, new_y, angle, cumulative_angle + angle, length, level, wacky)
 
 
 
@@ -39,6 +47,6 @@ penup()
 # goto(0,-300)
 hideturtle()
 tracer(False)
-drawBranch(0, -200, pi/3, 0, 60, 9)
+drawBranch(0, -200, pi/1.5, 0, 60, 6, .7)
 tracer(True)
 exitonclick()
