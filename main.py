@@ -53,13 +53,17 @@ class Canvas:
                 pressure_change = end_pressure - start_pressure
                 print(f"pressure: start{start_pressure} end{end_pressure} change{pressure_change}")
                 # Interpolate x, y, and pressure smoothly along the change in pressure
-                for step in range(1, abs(pressure_change)+1):
-                    incr_x = start_x + step * (end_x - start_x) / (abs(pressure_change))
-                    incr_y = start_y + step * (end_y - start_y) / (abs(pressure_change))
-                    line_width = start_pressure + step * (end_pressure - start_pressure) / (abs(pressure_change)) 
-                    print(f"incrementing to x{incr_x} y{incr_y} width{line_width}")
-                    turtle.width(line_width)
-                    turtle.goto(incr_x, incr_y)
+                if pressure_change == 0:
+                    turtle.width(end_pressure)
+                    turtle.goto(end_x, end_y)
+                else:
+                    for step in range(1, abs(pressure_change)+1):
+                        incr_x = start_x + step * (end_x - start_x) / (abs(pressure_change))
+                        incr_y = start_y + step * (end_y - start_y) / (abs(pressure_change))
+                        line_width = start_pressure + step * (end_pressure - start_pressure) / (abs(pressure_change)) 
+                        print(f"incrementing to x{incr_x} y{incr_y} width{line_width}")
+                        turtle.width(line_width)
+                        turtle.goto(incr_x, incr_y)
                     
         print("done drawing")
         turtle.exitonclick()
@@ -76,7 +80,9 @@ def main():
     painting.move_brush(0,0,10,0) #go back to origin without drawing and drop bursh to 10
     painting.move_brush(20,400,3, 1) # draw another line from the origin
     print(f"brush strokes recorded: {painting.moves}")
-
+    painting.move_brush(1, 300, 5, 0)
+    for x in range(1,300):
+        painting.move_brush(x,300-x,3, 5)
     painting.to_turtle()
 
 if __name__ == '__main__':
