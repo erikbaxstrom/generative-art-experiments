@@ -33,7 +33,14 @@ class Canvas:
         print(f"minx{min_x} maxx{max_x} miny{min_y} maxy{max_y}")
         turtle.setup(max_x - min_x + padding, max_y - min_y + padding)
         turtle.setworldcoordinates(min_x - padding/2, min_y - padding/2, max_x + padding/2, max_y + padding/2)
+        turtle.tracer(False)
+        turtle.hideturtle()
         # Draw the Brush Strokes
+        # Move to the starting location w/o drawing
+        print(f'moving to {self.moves[0][0], self.moves[0][1]}')
+        turtle.penup()
+        turtle.goto(self.moves[0][0], self.moves[0][1])
+        # Draw everything else
         for previous_move, current_move in zip(self.moves, self.moves[1:]):
             print(f"from:{previous_move} to: {current_move}")
             start_x = previous_move[0]
@@ -64,8 +71,9 @@ class Canvas:
                         print(f"incrementing to x{incr_x} y{incr_y} width{line_width}")
                         turtle.width(line_width)
                         turtle.goto(incr_x, incr_y)
-                    
+                        
         print("done drawing")
+        turtle.tracer(True)
         turtle.exitonclick()
 
 
@@ -73,17 +81,36 @@ class Canvas:
 
 def main():
     painting = Canvas()
-    painting.move_brush(0,0,0,0) # go to origin fast without drawing (s=0) and leave pen up (z=0)
-    painting.move_brush(100,-200,5,0) # s=0, so lift pen, move fast to 20,20, then move pen to half pressure
-    painting.move_brush(400,300,10,1) # starting from 20,20 with pen at half pressure, move to 40,40 while increasing brush pressure to full. do it slowly
-    painting.move_brush(50,50,0,10) # move to 50,50 while decreasing brush pressure to 'off'. do it quickly
-    painting.move_brush(0,0,10,0) #go back to origin without drawing and drop bursh to 10
-    painting.move_brush(20,400,3, 1) # draw another line from the origin
-    print(f"brush strokes recorded: {painting.moves}")
-    painting.move_brush(1, 300, 5, 0)
-    for x in range(1,300):
-        painting.move_brush(x,300-x,3, 5)
+
+    # Basic Test Code
+    # painting.move_brush(0,0,0,0) # go to origin fast without drawing (s=0) and leave pen up (z=0)
+    # painting.move_brush(100,-200,5,0) # s=0, so lift pen, move fast to 20,20, then move pen to half pressure
+    # painting.move_brush(400,300,10,1) # starting from 20,20 with pen at half pressure, move to 40,40 while increasing brush pressure to full. do it slowly
+    # painting.move_brush(50,50,0,10) # move to 50,50 while decreasing brush pressure to 'off'. do it quickly
+    # painting.move_brush(0,0,10,0) #go back to origin without drawing and drop bursh to 10
+    # painting.move_brush(20,400,3, 1) # draw another line from the origin
+    # print(f"brush strokes recorded: {painting.moves}")
+    # painting.move_brush(1, 300, 5, 0)
+    # for x in range(1,300):
+    #     painting.move_brush(x,300-x,3, 5)
+    # painting.to_turtle()
+
+    # Classic 10print
+    iterations = 20
+    tile_size = 20
+    for i in range(0,iterations):
+        for j in range(0,iterations):
+            if random.random() > (i+j)/(iterations * 2):
+                painting.move_brush(tile_size * i, tile_size * (j + 1), random.randint(1,10), 0)
+                painting.move_brush(tile_size * (i + 1), tile_size * (j), random.randint(1,10), 5)
+            else:
+                painting.move_brush(tile_size * (i + 1), tile_size * (j+1), random.randint(1,10), 0)
+                painting.move_brush(tile_size * (i), tile_size * (j), random.randint(1,10), 5)
     painting.to_turtle()
+
+
+
+
 
 if __name__ == '__main__':
     main()
