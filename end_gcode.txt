@@ -1,0 +1,8 @@
+;
+;
+;
+; Finish the Painting
+G0 F4300 Z0 ; lift the brush
+G0 X0 Y120 ; stick out the finished print
+M84 ; Turn off stepper motors
+;End of Gcode

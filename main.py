@@ -13,9 +13,20 @@ class Canvas:
         self.moves.append([x,y,pressure, speed])
         print(f"recorded move {x, y, pressure, speed}")
 
-    def to_gcode():
+    def to_gcode(self):
         """Export the Canvas as gcode"""
-        print("export gcode")
+        print("Export gcode")
+        gcode = ''
+        with open('start_gcode.txt') as file: # use .txt b/c .gcode is more likely to be accientally deleted
+            gcode += file.read()
+        
+        gcode += 'here is some gcode that I added \n'
+        
+        with open('end_gcode.txt') as file:
+            gcode += file.read()
+        print('the final gcode \n', gcode)
+
+
 
     def to_turtle(self):
         """Simulate the Canvas using Turtle Graphics"""
@@ -81,30 +92,30 @@ def main():
     canvas = Canvas()
 
     # Basic Test Code
-    # canvas.move_brush(0,0,0,0) # go to origin fast without drawing (s=0) and leave pen up (z=0)
-    # canvas.move_brush(100,-200,5,0) # s=0, so lift pen, move fast to 20,20, then move pen to half pressure
-    # canvas.move_brush(400,300,10,1) # starting from 20,20 with pen at half pressure, move to 40,40 while increasing brush pressure to full. do it slowly
-    # canvas.move_brush(50,50,0,10) # move to 50,50 while decreasing brush pressure to 'off'. do it quickly
-    # canvas.move_brush(0,0,10,0) #go back to origin without drawing and drop brush to 10
-    # canvas.move_brush(20,400,3, 1) # draw another line from the origin
-    # print(f"brush strokes recorded: {canvas.moves}")
+    canvas.move_brush(0,0,0,0) # go to origin fast without drawing (s=0) and leave pen up (z=0)
+    canvas.move_brush(100,-200,5,0) # s=0, so lift pen, move fast to 20,20, then move pen to half pressure
+    canvas.move_brush(400,300,10,1) # starting from 20,20 with pen at half pressure, move to 40,40 while increasing brush pressure to full. do it slowly
+    canvas.move_brush(50,50,0,10) # move to 50,50 while decreasing brush pressure to 'off'. do it quickly
+    canvas.move_brush(0,0,10,0) #go back to origin without drawing and drop brush to 10
+    canvas.move_brush(20,400,3, 1) # draw another line from the origin
+    print(f"brush strokes recorded: {canvas.moves}")
     # canvas.move_brush(1, 300, 5, 0)
     # for x in range(1,300):
     #     canvas.move_brush(x,300-x,3, 5)
-    # canvas.to_turtle()
+    canvas.to_gcode()
 
-    # Classic 10print
-    iterations = 20
-    tile_size = 20
-    for i in range(0,iterations):
-        for j in range(0,iterations):
-            if random.random() > (i+j)/(iterations * 2):
-                canvas.move_brush(tile_size * i, tile_size * (j + 1), random.randint(1,10), 0)
-                canvas.move_brush(tile_size * (i + 1), tile_size * (j), random.randint(1,10), 5)
-            else:
-                canvas.move_brush(tile_size * (i + 1), tile_size * (j+1), random.randint(1,10), 0)
-                canvas.move_brush(tile_size * (i), tile_size * (j), random.randint(1,10), 5)
-    canvas.to_turtle()
+    # # Classic 10print
+    # iterations = 20
+    # tile_size = 20
+    # for i in range(0,iterations):
+    #     for j in range(0,iterations):
+    #         if random.random() > (i+j)/(iterations * 2):
+    #             canvas.move_brush(tile_size * i, tile_size * (j + 1), random.randint(1,10), 0)
+    #             canvas.move_brush(tile_size * (i + 1), tile_size * (j), random.randint(1,10), 5)
+    #         else:
+    #             canvas.move_brush(tile_size * (i + 1), tile_size * (j+1), random.randint(1,10), 0)
+    #             canvas.move_brush(tile_size * (i), tile_size * (j), random.randint(1,10), 5)
+    # canvas.to_turtle()
 
 
 

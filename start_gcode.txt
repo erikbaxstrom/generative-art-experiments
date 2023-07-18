@@ -1,0 +1,14 @@
+; Basic Printer Settings
+M140 S0 ;set bed temp to zero. don't wait
+M104 S0 ; set hotend temp to zero. don't wait
+G21 ; use metric
+G90 ; use absolute positioning
+M107 ; turn fan off
+; Set up the coordinate system
+G28 ; home the printer
+G0 F4320 Z15 ; lift brush
+G0 F4320 X10 Y35 ; move to X10 Y35
+G92 X0 Y0 Z0 ; zero out coordinates
+;
+;
+;
