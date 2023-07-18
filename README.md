@@ -18,3 +18,7 @@ With the slashes heavily biased in one direction and more iterations.
 
 Slash direction biased according to position on the canvas.
 ![photo](./10print_4.png)
+
+# Exploring gcode
+
+Gcode is the set of instructions commonly used by 3d printers. As a next step, I'm going to attach a pen to my 3d printer and use it as a pen plotter.
