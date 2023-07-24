@@ -46,23 +46,26 @@ class Canvas:
 
         # Draw the Brush Strokes
         # Move to the starting location w/o drawing
-        print(f'moving to {self.moves[0][0], self.moves[0][1], self.moves[0][2]}')
+        print(f'processing move {self.moves[0][0], self.moves[0][1], self.moves[0][2]}')
         gcode += "; move to starting position then move the brush\n"
         gcode += f"G0 F90 Z{brush_z_off}\n" # lift brush
-        gcode += f"G0 F4300 X{self.moves[0][0]} Y{self.moves[0][1]}\n" # move x/y
+        x_coord = round(scale * self.moves[0][0], 2)
+        y_coord = round(scale * self.moves[0][1], 2)
+        gcode += f"G0 F4300 X{x_coord} Y{y_coord}\n" # move x/y
         if self.moves[0][3] == 0:
             z_coord = brush_z_off
         else:
             z_coord = brush_z_max - self.moves[0][3] * (brush_z_max - brush_z_min)
+            z_coord = round(z_coord, 2)
         gcode += f"G0 F90 Z{z_coord}\n" # drop brush
         # Draw everything else
         for previous_move, current_move in zip(self.moves, self.moves[1:]):
             print(f"from:{previous_move} to: {current_move}")
-            start_x = previous_move[0]
-            start_y = previous_move[1]
+            start_x = round(scale * previous_move[0], 2)
+            start_y = round(scale * previous_move[1], 2)
             start_pressure = previous_move[2]
-            end_x = current_move[0]
-            end_y = current_move[1]
+            end_x = round(scale * current_move[0], 2)
+            end_y = round(scale * current_move[1], 2)
             end_pressure = current_move[2]
             speed = current_move[3]
             if(speed==0): # don't draw, just move
@@ -78,7 +81,7 @@ class Canvas:
 
             else: # Let's draw!
                 g_speed = brush_speed_min + speed * (brush_speed_max - brush_speed_min / 10)
-                g_speed = round(g_speed)
+                g_speed = round(g_speed, 2)
                 pressure_change = end_pressure - start_pressure
                 if pressure_change == 0:
                     gcode += f"G1 F{g_speed} X{end_x} Y{end_y}\n"
@@ -86,7 +89,7 @@ class Canvas:
                     gcode += "; paint\n"
                     for step in range(1, abs(pressure_change)+1):
                         incr_x = start_x + step * (end_x - start_x) / (abs(pressure_change))
-                        incr_x = round(incr_x, 1)
+                        incr_x = round(incr_x, 2)
                         incr_y = start_y + step * (end_y - start_y) / (abs(pressure_change))
                         incr_y = round(incr_y, 2)
                         line_width = start_pressure + step * (end_pressure - start_pressure) / (abs(pressure_change)) 
@@ -103,7 +106,7 @@ class Canvas:
 
         with open('end_gcode.txt') as file:
             gcode += file.read()
-        print('the final gcode \n', gcode)
+        print('\n\n## The Final gcode ##\n', gcode)
 
 
 
@@ -172,7 +175,7 @@ def main():
 
     # Basic Test Code
     canvas.move_brush(0,0,0,0) # go to origin fast without drawing (s=0) and leave pen up (z=0)
-    canvas.move_brush(100,-200,5,0) # s=0, so lift pen, move fast to 20,20, then move pen to half pressure
+    canvas.move_brush(100,200,5,0) # s=0, so lift pen, move fast to 20,20, then move pen to half pressure
     canvas.move_brush(400,300,10,1) # starting from 20,20 with pen at half pressure, move to 40,40 while increasing brush pressure to full. do it slowly
     canvas.move_brush(50,50,0,10) # move to 50,50 while decreasing brush pressure to 'off'. do it quickly
     canvas.move_brush(0,0,10,0) #go back to origin without drawing and drop brush to 10
