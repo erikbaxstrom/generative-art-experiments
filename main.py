@@ -4,8 +4,20 @@ import random
 class Canvas:
     """A model of brush strokes on a canvas"""
 
+
     def __init__(self) -> None:
         self.moves = []
+        # Some physical parameters of the printer and the brush
+        self.bed_x_max = 110.0
+        self.bed_y_max = 85.0
+        self.bed_padding = 10
+        self.brush_z_min = 0 # relative coordinate!!!
+        self.brush_z_max = 3 # relative coordinate!!!
+        self.brush_z_off = 5 # relative coordinate!!!
+        self.brush_z_range = self.brush_z_max - self.brush_z_min
+        self.brush_speed_max = 4300
+        self.brush_speed_min = 300
+        self.scale = 0
         print("Created Canvas")
     
     def move_brush(self, x, y, pressure, speed):
@@ -13,18 +25,28 @@ class Canvas:
         self.moves.append([x,y,pressure, speed])
         print(f"recorded move {x, y, pressure, speed}")
 
+    def canv_to_z(self, pressure):
+        """Convert a pressure (0 - 10) into a gcode Z value"""
+        if pressure == 0:
+            return self.brush_z_off
+        else:
+            z = self.brush_z_max -  self.brush_z_range  * pressure /10
+            return round(z, 2)
+        
+    def canv_to_g(self, canv_coord):
+        g_coord = self.scale * canv_coord
+        return round(g_coord, 2)
+
+    def canv_to_f(self, speed):
+        f_range = self.brush_speed_max - self.brush_speed_min #TODO: move the brush speed range calc to constructor
+        f_val = self.brush_speed_min + speed * f_range / 10 
+        return round(f_val, 2)
+
+
+
     def to_gcode(self):
         """Export the Canvas as gcode"""
         print("\n\n## Export gcode ##\n")
-        # Some physical parameters of the printer and the brush
-        bed_x_max = 110.0
-        bed_y_max = 85.0
-        bed_padding = 10
-        brush_z_min = 0 # relative coordinate!!!
-        brush_z_max = 3 # relative coordinate!!!
-        brush_z_off = 5 # relative coordinate!!!
-        brush_speed_max = 4300
-        brush_speed_min = 300
 
 
         gcode = ''
@@ -32,68 +54,67 @@ class Canvas:
             gcode += file.read()
         
         # Generate some gcode
-        # find the Canvas dimensions
+        # find the Canvas dimensions (TODO: move to constructor)
         max_x = max_y = 0
         for move in self.moves:
             max_x = max(max_x, move[0])
             max_y = max(max_y, move[1])
         print(f"max_x{max_x} max_y{max_y}")
-        max_x += bed_padding
-        max_y += bed_padding
-        x_scale = bed_x_max / max_x
-        y_scale = bed_y_max / max_y
-        scale = min(x_scale, y_scale) # scale to fit the longer dimension (min b/c scales are inverted)
+        max_x += self.bed_padding
+        max_y += self.bed_padding
+        x_scale = self.bed_x_max / max_x
+        y_scale = self.bed_y_max / max_y
+        self.scale = min(x_scale, y_scale) # scale to fit the longer dimension (min b/c scales are inverted)
 
-        # Draw the Brush Strokes
         # Move to the starting location w/o drawing
         print(f'processing move {self.moves[0][0], self.moves[0][1], self.moves[0][2]}')
         gcode += "; move to starting position then move the brush\n"
-        gcode += f"G0 F90 Z{brush_z_off}\n" # lift brush
-        x_coord = round(scale * self.moves[0][0], 2)
-        y_coord = round(scale * self.moves[0][1], 2)
+        gcode += f"G0 F90 Z{self.canv_to_z(0)}\n" # lift brush
+        x_coord = self.canv_to_g(self.moves[0][0])
+        y_coord = self.canv_to_g(self.moves[0][1])
+        z_coord = self.canv_to_z(self.moves[0][2])
         gcode += f"G0 F4300 X{x_coord} Y{y_coord}\n" # move x/y
-        if self.moves[0][3] == 0:
-            z_coord = brush_z_off
-        else:
-            z_coord = brush_z_max - self.moves[0][3] * (brush_z_max - brush_z_min)
-            z_coord = round(z_coord, 2)
         gcode += f"G0 F90 Z{z_coord}\n" # drop brush
         # Draw everything else
         for previous_move, current_move in zip(self.moves, self.moves[1:]):
             print(f"from:{previous_move} to: {current_move}")
-            start_x = round(scale * previous_move[0], 2)
-            start_y = round(scale * previous_move[1], 2)
+            start_x = self.canv_to_g(previous_move[0])
+            start_y = self.canv_to_g(previous_move[1])
             start_pressure = previous_move[2]
-            end_x = round(scale * current_move[0], 2)
-            end_y = round(scale * current_move[1], 2)
+            end_x = self.canv_to_g(current_move[0])
+            end_y = self.canv_to_g(current_move[1])
             end_pressure = current_move[2]
             speed = current_move[3]
             if(speed==0): # don't draw, just move
                 print(f'moving to {end_x, end_y}')
                 gcode += "; move\n"
-                gcode += f"G0 F90 Z{brush_z_off}\n" # lift brush
+                gcode += f"G0 F90 Z{self.canv_to_z(0)}\n" # lift brush
                 gcode += f"G0 F4300 X{end_x} Y{end_y}\n" # move x/y
-                if end_pressure == 0:
-                    z_coord = brush_z_off
-                else:
-                    z_coord = brush_z_max - end_pressure * (brush_z_max - brush_z_min) / 10
-                gcode += f"G0 F90 Z{z_coord}\n" # drop brush
+                # if end_pressure == 0:
+                #     z_coord = self.brush_z_off
+                # else:
+                #     z_coord = self.brush_z_min + end_pressure * (self.brush_z_max - self.brush_z_min) / 10
+                gcode += f"G0 F90 Z{self.canv_to_z(end_pressure)}\n" # drop brush
 
             else: # Let's draw!
-                g_speed = brush_speed_min + speed * (brush_speed_max - brush_speed_min / 10)
-                g_speed = round(g_speed, 2)
+                # g_speed = self.brush_speed_min + speed * (self.brush_speed_max - self.brush_speed_min / 10)
+                # g_speed = round(g_speed, 2)
+                g_speed = self.canv_to_f(speed)
                 pressure_change = end_pressure - start_pressure
                 if pressure_change == 0:
                     gcode += f"G1 F{g_speed} X{end_x} Y{end_y}\n"
                 else:
                     gcode += "; paint\n"
+                    # steps = g_interpolate(start_x, start_y, end_x, end_y, start_pressure, end_pressure) # should this return canvas x/y/pressure values or gcode x/y/z values? leaning toward canvas
+                    # for step in steps:
+                        # gcode += f"G1 F{step[0]} X{step[1]} Y{step[2]} Z{step[3]}" # as written, assumes gcode x/y/z values. 
                     for step in range(1, abs(pressure_change)+1):
                         incr_x = start_x + step * (end_x - start_x) / (abs(pressure_change))
                         incr_x = round(incr_x, 2)
                         incr_y = start_y + step * (end_y - start_y) / (abs(pressure_change))
                         incr_y = round(incr_y, 2)
                         line_width = start_pressure + step * (end_pressure - start_pressure) / (abs(pressure_change)) 
-                        incr_z = brush_z_min + line_width * (brush_z_max - brush_z_min) / 10
+                        incr_z = self.brush_z_min + line_width * (self.brush_z_max - self.brush_z_min) / 10
                         incr_z = round(incr_z, 2)
                         print(f"incrementing to x{incr_x} y{incr_y} width{line_width}")
                         gcode += f"G1 F{g_speed} X{incr_x} Y{incr_y} Z{incr_z}\n"
