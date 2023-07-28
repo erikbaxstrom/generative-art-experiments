@@ -4,13 +4,9 @@ M104 S0 ; set hotend temp to zero. don't wait
 G21 ; use metric
 G90 ; use absolute positioning
 M107 ; turn fan off
-G28 ; home the printer
-; M600 ; pause for filament change (aka pen adjustment)
+G28 ; home the print head
 ; Set up the coordinate system
 G0 F4320 Z15 ; lift brush
 G0 F4320 X10 Y35 ; move to X10 Y35
 G92 X0 Y0 Z0 ; set the zero point to the current coordinates
-; G0 F90 Z0 ; pen up
-;
-;
 ;

@@ -1,6 +1,4 @@
 ;
-;
-;
 ; Finish the Painting
 G0 F4300 Z10 ; lift the brush
 G0 X0 Y85 ; stick out the finished print
