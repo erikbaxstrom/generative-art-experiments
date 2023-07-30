@@ -102,6 +102,9 @@ class Canvas:
     
         print("\n\n## The Final gcode ##\n", gcode)
 
+        with open('gcode_output.gcode', 'w') as file:
+            file.write(gcode)
+
 
 
     def to_turtle(self):
@@ -181,7 +184,7 @@ def main():
 
 
     # Classic 10print
-    iterations = 10
+    iterations = 20
     tile_size = 20
     for i in range(0,iterations):
         for j in range(0,iterations):
