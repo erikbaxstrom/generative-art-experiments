@@ -1,8 +1,10 @@
 import turtle
 import random
+from PIL import Image
 
-class Canvas:
-    """A model of brush strokes on a canvas"""
+
+class Plot:
+    """A model of brush strokes on a Plot"""
 
 
     def __init__(self) -> None:
@@ -24,7 +26,7 @@ class Canvas:
         self.scale = 0
     
     def move_brush(self, x, y, pressure, speed):
-        """Paint on the Canvas by moving the brush. Speed = 0 lifts brush before moving."""
+        """Paint on the Plot by moving the brush. Speed = 0 lifts brush before moving."""
         self.moves.append([x,y,pressure, speed])
         # print(f"recorded move {x, y, pressure, speed}")
 
@@ -55,7 +57,7 @@ class Canvas:
         return gcode
 
     def to_gcode(self):
-        """Export the Canvas as gcode"""
+        """Export the Plot as gcode"""
         # print("\n\n## Export gcode ##\n")
 
         # Import gcode header boilerplate
@@ -64,7 +66,7 @@ class Canvas:
             gcode += file.read()
         
         ## Generate some gcode
-        # Find the Canvas dimensions
+        # Find the Plot dimensions
         max_x = max_y = 0
         for move in self.moves:
             max_x = max(max_x, move[0])
@@ -74,7 +76,7 @@ class Canvas:
         max_y += self.bed_padding
         x_scale = self.bed_x_max / max_x
         y_scale = self.bed_y_max / max_y
-        self.scale = min(x_scale, y_scale) # scale to fit the longer canvas dimension (min b/c scales are inverse of canvas size)
+        self.scale = min(x_scale, y_scale) # scale to fit the longer Plot dimension (min b/c scales are inverse of Plot size)
 
         # Move to the starting location w/o drawing
         x = self.canv_to_g(self.moves[0][0])
@@ -104,8 +106,8 @@ class Canvas:
 
 
 
-    def to_turtle(self):
-        """Simulate the Canvas using Turtle Graphics"""
+    def to_turtle(self, turtle):
+        """Simulate the Plot using Turtle Graphics"""
         print("\n\n## Draw In Turtle ##\n")
         # Find the extreme coordinates and set up the drawing area
         max_x = max_y = min_x = min_y = 0
@@ -115,11 +117,13 @@ class Canvas:
             min_x = min(min_x, move[0])
             max_y = max(max_y, move[1])
             min_y = min(min_y, move[1])
-        # print(f"minx{min_x} maxx{max_x} miny{min_y} maxy{max_y}")
+        print(f"minx{min_x} maxx{max_x} miny{min_y} maxy{max_y}")
         turtle.setup(max_x - min_x + padding, max_y - min_y + padding)
         turtle.setworldcoordinates(min_x - padding/2, min_y - padding/2, max_x + padding/2, max_y + padding/2)
+        # worldcoordinates = [min_x - padding/2, min_y - padding/2, max_x + padding/2, max_y + padding/2]
         turtle.tracer(False)
         turtle.hideturtle()
+        turtle.speed(0)
         # Draw the Brush Strokes
         # Move to the starting location w/o drawing
         # print(f"moving to {self.moves[0][0], self.moves[0][1]}")
@@ -159,25 +163,29 @@ class Canvas:
                         
         # print("done drawing")
         turtle.tracer(True)
+        turtle.getscreen().getcanvas().postscript(file="duck.eps")
+        img = Image.open("duck.eps") 
+        img.save("duck.png", "PNG")  
         turtle.exitonclick()
+        # return worldcoordinates
 
 
 
 
-def main():
-    canvas = Canvas()
+def draw():
+    plot = Plot()
 
     # # Basic Test Code
-    # # canvas.move_brush(0,0,0,0) # go to origin fast without drawing (s=0) and leave pen up (z=0)
-    # canvas.move_brush(100,200,5,0) # s=0, so lift pen, move fast to 20,20, then move pen to half pressure
-    # canvas.move_brush(400,300,10,1) # starting from 20,20 with pen at half pressure, move to 40,40 while increasing brush pressure to full. do it slowly
-    # canvas.move_brush(50,50,1,10) # move to 50,50 while decreasing brush pressure to 'off'. do it quickly
-    # canvas.move_brush(0,0,10,0) #go back to origin without drawing then brush to full pressure
-    # canvas.move_brush(20,400,1, 5) # draw another line from the origin
-    # # print(f"Brush Strokes:\n{canvas.moves}")
+    # # plot.move_brush(0,0,0,0) # go to origin fast without drawing (s=0) and leave pen up (z=0)
+    # plot.move_brush(100,200,5,0) # s=0, so lift pen, move fast to 20,20, then move pen to half pressure
+    # plot.move_brush(400,300,10,1) # starting from 20,20 with pen at half pressure, move to 40,40 while increasing brush pressure to full. do it slowly
+    # plot.move_brush(50,50,1,10) # move to 50,50 while decreasing brush pressure to 'off'. do it quickly
+    # plot.move_brush(0,0,10,0) #go back to origin without drawing then brush to full pressure
+    # plot.move_brush(20,400,1, 5) # draw another line from the origin
+    # # print(f"Brush Strokes:\n{plot.moves}")
 
-    # canvas.to_gcode()
-    # # canvas.to_turtle()
+    # plot.to_gcode()
+    # # plot.to_turtle()
 
 
     # Classic 10print
@@ -186,17 +194,25 @@ def main():
     for i in range(0,iterations):
         for j in range(0,iterations):
             if random.random() > (i+j)/(iterations * 2):
-                canvas.move_brush(tile_size * i, tile_size * (j + 1), random.randint(1,10), 0)
-                canvas.move_brush(tile_size * (i + 1), tile_size * (j), random.randint(1,10), random.randint(1,10))
+                plot.move_brush(tile_size * i, tile_size * (j + 1), random.randint(1,10), 0)
+                plot.move_brush(tile_size * (i + 1), tile_size * (j), random.randint(1,10), random.randint(1,10))
             else:
-                canvas.move_brush(tile_size * (i + 1), tile_size * (j+1), random.randint(1,10), 0)
-                canvas.move_brush(tile_size * (i), tile_size * (j), random.randint(1,10), random.randint(1,10))
-    canvas.to_gcode()
-    canvas.to_turtle()
+                plot.move_brush(tile_size * (i + 1), tile_size * (j+1), random.randint(1,10), 0)
+                plot.move_brush(tile_size * (i), tile_size * (j), random.randint(1,10), random.randint(1,10))
+    plot.to_gcode()
+    plot.to_turtle(turtle)
+
+
+# def main():
+
+# tk.Title("a thing")
+# button = tk.Button(root, text="click me!", command=draw)
+# button.pack()
+
+
+# root.mainloop()
 
 
 
-
-
-if __name__ == '__main__':
-    main()
+# if __name__ == '__main__':
+#     main()
