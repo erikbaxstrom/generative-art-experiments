@@ -12,7 +12,7 @@ class Canvas:
         self.bed_x_max = 110.0
         self.bed_y_max = 85.0
         self.bed_padding = 10
-        self.brush_z_min = -4.6 # relative coordinate!!! most pressure & lowest z coord
+        self.brush_z_min = -4.2 # relative coordinate!!! most pressure & lowest z coord 4.6 is lowest for Fudebiyori brush pen
         self.brush_z_max = -3.2 # relative coordinate!!! least pressure & highest z coord
         self.brush_z_off = -2.25 # relative coordinate!!! brush lifted completely off the paper
         self.brush_z_range = self.brush_z_max - self.brush_z_min
@@ -183,17 +183,51 @@ def main():
     # # canvas.to_turtle()
 
 
-    # Classic 10print
-    iterations = 20
-    tile_size = 20
-    for i in range(0,iterations):
-        for j in range(0,iterations):
-            if random.random() > (i+j)/(iterations * 2):
-                canvas.move_brush(tile_size * i, tile_size * (j + 1), random.randint(1,10), 0)
-                canvas.move_brush(tile_size * (i + 1), tile_size * (j), random.randint(1,10), random.randint(1,10))
+    # # Classic 10print
+    # iterations = 20
+    # tile_size = 20
+    # for i in range(0,iterations):
+    #     for j in range(0,iterations):
+    #         if random.random() > (i+j)/(iterations * 2):
+    #             canvas.move_brush(tile_size * i, tile_size * (j + 1), random.randint(1,10), 0)
+    #             canvas.move_brush(tile_size * (i + 1), tile_size * (j), random.randint(1,10), random.randint(1,10))
+    #         else:
+    #             canvas.move_brush(tile_size * (i + 1), tile_size * (j+1), random.randint(1,10), 0)
+    #             canvas.move_brush(tile_size * (i), tile_size * (j), random.randint(1,10), random.randint(1,10))
+    # canvas.to_gcode()
+    # canvas.to_turtle()
+
+
+    # # Many Paths
+    # iterations = 20
+    # tile_size = 30
+    # for i in range(0,iterations):
+    #     for j in range(0,iterations):
+    #         if random.random() > (i+j)/(iterations * 2):
+    #             canvas.move_brush(tile_size * (i), tile_size * (j), random.randint(1,10), 0)
+    #             canvas.move_brush(tile_size * (i + 1), tile_size * (j), random.randint(1,10), random.randint(1,10))
+    #         else:
+    #             canvas.move_brush(tile_size * (i), tile_size * (j), random.randint(1,10), 0)
+    #             canvas.move_brush(tile_size * (i), tile_size * (j+1), random.randint(1,10), random.randint(1,10))
+    # canvas.to_gcode()
+    # canvas.to_turtle()
+    
+    
+    # horizontal/vetical variation on 10print
+    x_iterations = 10
+    y_iterations = 20
+    tile_size = 40
+    for i in range(0,y_iterations):
+        for j in range(0,x_iterations):
+            # if random.random() > (i+j)/(iterations * 2):
+            if random.random() > 0.5:
+                width = random.randint(1,5)
+                canvas.move_brush(tile_size * (i), tile_size * (j + 0.5), width, 0)
+                canvas.move_brush(tile_size * (i + 2), tile_size * (j + 0.5), width, 10)
             else:
-                canvas.move_brush(tile_size * (i + 1), tile_size * (j+1), random.randint(1,10), 0)
-                canvas.move_brush(tile_size * (i), tile_size * (j), random.randint(1,10), random.randint(1,10))
+                width = random.randint(1,10)
+                canvas.move_brush(tile_size * (i + 0.5), tile_size * (j), width, 0)
+                canvas.move_brush(tile_size * (i + 0.5), tile_size * (j+1), 10-width, 10)
     canvas.to_gcode()
     canvas.to_turtle()
 
